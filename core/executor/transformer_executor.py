@@ -1,5 +1,6 @@
 import os
 import sys
+from typing_extensions import override
 import torch
 import math
 import pandas as pd
@@ -12,8 +13,6 @@ from core.model import Seq2SeqTransformer
 from core.tokenizer import *
 
 from timeit import default_timer as timer
-
-from transformers import AutoTokenizer
 
 from logger.logger import get_logger
 
@@ -34,18 +33,30 @@ class Transformer_Executor(Base_Executor):
         with torch.no_grad():
             for it, batch in enumerate(dataloader):
                 
-                pred = self.model.generate( input_ids = batch['input_ids'].to(self.config.DEVICE),
-                                            max_length = max_length)
+                pred = self.model.generate( src = batch['input_ids'].to(self.config.DEVICE),
+                                            src_key_padding_mask = batch['src_attention_mask'].to(self.config.DEVICE),
+                                            start_symbol = self.tokenizer.bos_id,
+                                            end_symbol = self.tokenizer.eos_id,
+                                            pad_symbol = self.tokenizer.pad_id,
+                                            max_len = max_length)
                 
-                if self.config.modeltype == "t5":
-                    decoded_preds += self.tokenizer.batch_decode(self._infer_post_processing(pred.tolist()), skip_special_tokens=True)
-                else:
-                    decoded_preds += self.tokenizer.batch_decode(pred, skip_special_tokens=True)
+                decoded_preds += self.tokenizer.batch_decode(self._infer_post_processing(pred.tolist()), skip_special_tokens=True)
 
                 log.info(f"|===| Inferring... {it+1} it |===|")
 
         return decoded_preds
-            
+    
+    @override
+    def _infer_post_processing(self, out_ids):
+        res = []
+        for out in out_ids:
+            try:
+                res.append(out[1:out.index(self.tokenizer.eos_id)])
+            except:
+                res.append(out)
+
+        return res
+ 
     def _create_data_utils(self):
 
         self._create_tokenizer()
@@ -136,10 +147,10 @@ class Transformer_Executor(Base_Executor):
                 trg_input = labels[:, :-1]
                 label_attention_mask = label_attention_mask[:, :-1]
 
-                logits = self.model(input_ids = batch['input_ids'].to(self.config.DEVICE),
-                                    label_ids = trg_input,
-                                    src_attention_mask = batch['src_attention_mask'].to(self.config.DEVICE),
-                                    label_attention_mask = label_attention_mask)
+                logits = self.model(src = batch['input_ids'].to(self.config.DEVICE),
+                                    trg = trg_input,
+                                    src_padding_mask = batch['src_attention_mask'].to(self.config.DEVICE),
+                                    trg_padding_mask = label_attention_mask)
 
 
                 self.pretrain_optim.zero_grad()
@@ -213,10 +224,10 @@ class Transformer_Executor(Base_Executor):
                 trg_input = labels[:, :-1]
                 label_attention_mask = label_attention_mask[:, :-1]
 
-                logits = self.model(input_ids = batch['input_ids'].to(self.config.DEVICE),
-                                    label_ids = trg_input,
-                                    src_attention_mask = batch['src_attention_mask'].to(self.config.DEVICE),
-                                    label_attention_mask = label_attention_mask)
+                logits = self.model(src = batch['input_ids'].to(self.config.DEVICE),
+                                    trg = trg_input,
+                                    src_padding_mask = batch['src_attention_mask'].to(self.config.DEVICE),
+                                    trg_padding_mask = label_attention_mask)
 
 
                 self.optim.zero_grad()
@@ -297,10 +308,10 @@ class Transformer_Executor(Base_Executor):
                 trg_input = labels[:, :-1]
                 label_attention_mask = label_attention_mask[:, :-1]
 
-                logits = self.model(input_ids = batch['input_ids'].to(self.config.DEVICE),
-                                    label_ids = trg_input,
-                                    src_attention_mask = batch['src_attention_mask'].to(self.config.DEVICE),
-                                    label_attention_mask = label_attention_mask)
+                logits = self.model(src = batch['input_ids'].to(self.config.DEVICE),
+                                    trg = trg_input,
+                                    src_padding_mask = batch['src_attention_mask'].to(self.config.DEVICE),
+                                    trg_padding_mask = label_attention_mask)
 
                 trg_out = labels[:, 1:]
 
