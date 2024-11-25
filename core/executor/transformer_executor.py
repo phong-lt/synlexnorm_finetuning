@@ -7,9 +7,9 @@ from torch.utils.data import DataLoader
 
 from .base_executor import Base_Executor
 
-from dataset import Scratch_LexDataset
-from model import Seq2SeqTransformer
-from tokenizer import *
+from core.dataset import Scratch_LexDataset
+from core.model import Seq2SeqTransformer
+from core.tokenizer import *
 
 from timeit import default_timer as timer
 

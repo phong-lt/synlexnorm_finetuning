@@ -4,8 +4,8 @@ import torch
 import math
 from torch.utils.data import DataLoader
 
-from dataset import *
-from model import *
+from core.dataset import *
+from core.model import *
 
 from evaluation.err import compute_err_metrics
 

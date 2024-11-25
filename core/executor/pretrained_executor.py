@@ -5,8 +5,8 @@ from torch.utils.data import DataLoader
 
 from .base_executor import Base_Executor
 
-from dataset import Pretrained_LexDataset
-from model import LexBARTModel, LexT5Model
+from core.dataset import Pretrained_LexDataset
+from core.model import LexBARTModel, LexT5Model
 
 from timeit import default_timer as timer
 
