@@ -1,29 +1,5 @@
 # Enhancing Vietnamese Lexical Normalization with Synthetic Data
 
-This repository contains code to evaluate Vietnamese lexical normalization using various synthetic data training strategies and model architectures.
-
-## Project Structure
-```
-├── config/
-│   ├── bartpho.yaml
-│   ├── byt5.yaml
-│   ├── byt5_dropped.yaml
-│   ├── byt5_pre_aug.yaml
-│   ├── config.py
-│   └── vit5.yaml
-├── core/
-│   ├── dataset.py
-│   ├── executing.py
-│   └── modeling.py
-├── evaluation/
-│   └── err.py
-├── logger/
-│   └── logger.py
-├── README.md
-├── requirements.txt
-└── run.py
-```
-
 ## Setup
 
 1. Clone the repository:
