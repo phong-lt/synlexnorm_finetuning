@@ -71,6 +71,8 @@ class Base_Executor():
         if self.mode =='train':
             if self.config.DO_PRETRAINING:
                 self._pretrain_step()
+            if self.config.PRETRAIN_ONLY:
+                exit(-1)
             self._train_step()
         elif self.mode == 'eval':
             self.evaluate()
@@ -137,6 +139,14 @@ class Base_Executor():
     
     
     def _init_training_properties(self):
+        if self.config.DO_PRETRAINING:
+            self.pretrain_optim = torch.optim.Adam(self.model.parameters(), lr=self.config.pretrain_LR, betas=self.config.pretrain_BETAS, eps=1e-9)
+
+            self.pretrain_loss_fn = torch.nn.CrossEntropyLoss(ignore_index=self.tokenizer.pad_token_id)
+            
+            self.pretrain_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer = self.optim, total_iters = self.config.pretrain_warmup_step)
+
+
         self.optim = torch.optim.Adam(self.model.parameters(), lr=self.config.LR, betas=self.config.BETAS, eps=1e-9)
 
         self.loss_fn = torch.nn.CrossEntropyLoss(ignore_index=self.tokenizer.pad_token_id)

@@ -142,16 +142,16 @@ class Transformer_Executor(Base_Executor):
                                     label_attention_mask = label_attention_mask)
 
 
-                self.optim.zero_grad()
+                self.pretrain_optim.zero_grad()
 
                 trg_out = labels[:, 1:]
 
-                loss = self.loss_fn(logits.reshape(-1, logits.shape[-1]), trg_out.reshape(-1))
+                loss = self.pretrain_loss_fn(logits.reshape(-1, logits.shape[-1]), trg_out.reshape(-1))
                 loss.backward()
 
-                self.optim.step()
+                self.pretrain_optim.step()
 
-                self.scheduler.step()
+                self.pretrain_scheduler.step()
                 
                 losses += loss.data.item()
 
@@ -164,8 +164,8 @@ class Transformer_Executor(Base_Executor):
                     if self.SAVE:
                         lstatedict = {
                                     "state_dict": self.model.state_dict(),
-                                    "optimizer": self.optim.state_dict(),
-                                    "scheduler": self.scheduler.state_dict(),
+                                    "optimizer": self.pretrain_optim.state_dict(),
+                                    "scheduler": self.pretrain_scheduler.state_dict(),
                                     "step": current_step,
                                     "best_score": self.best_score
                                 }
