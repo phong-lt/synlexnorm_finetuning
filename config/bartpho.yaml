@@ -40,10 +40,10 @@ eval_after_steps: 1000
 
 max_eval_length: 128
 ## Data path
-pretrain_data_path: "/wiki20k.csv"
-train_path: "/train.csv"
-val_path: "/dev.csv"
-predict_path: "/dev.csv"
+pretrain_data_path: "syn_test_100k.csv"
+train_path: "ViLexNorm/data/train.csv"
+val_path: "ViLexNorm/data/dev.csv"
+predict_path: "ViLexNorm/data/test.csv"
 
 src_max_token_len: 256
 trg_max_token_len: 256
