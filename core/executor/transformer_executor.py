@@ -311,7 +311,7 @@ class Transformer_Executor(Base_Executor):
                     log.info(f"--VALIDATING--| Step: {it+1}/{self.valiter_length} | Loss: {round(losses / (it + 1), 2)}")
 
 
-        return losses / len(list(self.valiter))
+        return losses / self.valiter_length
     
     def _build_model(self):
         self.model = Seq2SeqTransformer(num_encoder_layers = self.config.NumEncoderLayers,

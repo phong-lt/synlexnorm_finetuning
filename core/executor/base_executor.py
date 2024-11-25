@@ -122,13 +122,18 @@ class Base_Executor():
         if self.config.DO_PRETRAINING:
             self.pretrainiter = DataLoader(dataset = self.pretrain_data, 
                                     batch_size=self.config.PRETRAIN_BATCH_SIZE, 
+                                    num_workers=self.config.NUMWORKERS,
                                     shuffle=True)
        
         self.trainiter = DataLoader(dataset = self.train_data, 
                                     batch_size=self.config.TRAIN_BATCH_SIZE, 
+                                    num_workers=self.config.NUMWORKERS,
                                     shuffle=True)
         self.valiter = DataLoader(dataset = self.val_data, 
+                                    num_workers=self.config.NUMWORKERS,
                                     batch_size=self.config.EVAL_BATCH_SIZE)
+        
+        self.valiter_length = math.ceil(len(self.val_data)/self.config.EVAL_BATCH_SIZE)
     
     
     def _init_training_properties(self):

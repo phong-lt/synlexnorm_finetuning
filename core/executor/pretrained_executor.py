@@ -309,7 +309,7 @@ class Pretrained_Executor(Base_Executor):
                     log.info(f"--VALIDATING--| Step: {it+1}/{self.valiter_length} | Loss: {round(losses / (it + 1), 2)}")
 
 
-        return losses / len(list(self.valiter))
+        return losses / self.valiter_length
     
     def _build_model(self):
         if self.config.modeltype == "t5":
