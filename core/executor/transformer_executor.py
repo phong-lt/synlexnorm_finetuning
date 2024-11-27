@@ -56,6 +56,36 @@ class Transformer_Executor(Base_Executor):
                 res.append(out)
 
         return res
+    
+    @override
+    def _init_training_properties(self):
+        if self.config.DO_PRETRAINING:
+            self.pretrain_optim = torch.optim.Adam(self.model.parameters(), lr=self.config.pretrain_LR, betas=self.config.pretrain_BETAS, eps=1e-9)
+
+            self.pretrain_loss_fn = torch.nn.CrossEntropyLoss(ignore_index=self.tokenizer.pad_id)
+            
+            self.pretrain_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer = self.pretrain_optim, total_iters = self.config.pretrain_warmup_step)
+
+
+        self.optim = torch.optim.Adam(self.model.parameters(), lr=self.config.LR, betas=self.config.BETAS, eps=1e-9)
+
+        self.loss_fn = torch.nn.CrossEntropyLoss(ignore_index=self.tokenizer.pad_id)
+        
+        self.scheduler = torch.optim.lr_scheduler.LinearLR(optimizer = self.optim, total_iters = self.config.warmup_step)
+
+        self.SAVE = self.config.SAVE
+
+        if os.path.isfile(os.path.join(self.config.SAVE_PATH, "last_ckp.pth")):
+            log.info("###Load trained checkpoint ...")
+            ckp = torch.load(os.path.join(self.config.SAVE_PATH, "last_ckp.pth"))
+            try:
+                log.info(f"\t- Last train epoch: {ckp['epoch']}")
+            except:
+                log.info(f"\t- Last train step: {ckp['step']}")
+            self.model.load_state_dict(ckp['state_dict'])
+            self.optim.load_state_dict(ckp['optimizer'])
+            self.scheduler.load_state_dict(ckp['scheduler'])
+            self.best_score = ckp['best_score']
  
     def _create_data_utils(self):
 
@@ -66,20 +96,17 @@ class Transformer_Executor(Base_Executor):
         if self.config.DO_PRETRAINING:
             self.pretrain_data = Scratch_LexDataset(data_path = self.config.pretrain_data_path,
                                             tokenizer = self.tokenizer,
-                                            modeltype = self.config.modeltype,
                                             batch = 256,
                                             src_max_token_len = self.config.src_max_token_len,
                                             trg_max_token_len = self.config.trg_max_token_len)
         
         self.train_data = Scratch_LexDataset(data_path = self.config.train_path,
                                             tokenizer = self.tokenizer,
-                                            modeltype = self.config.modeltype,
                                             batch = 256,
                                             src_max_token_len = self.config.src_max_token_len,
                                             trg_max_token_len = self.config.trg_max_token_len)
         self.val_data = Scratch_LexDataset(data_path = self.config.val_path,
                                             tokenizer = self.tokenizer,
-                                            modeltype = self.config.modeltype,
                                             batch = 256,
                                             src_max_token_len = self.config.src_max_token_len,
                                             trg_max_token_len = self.config.trg_max_token_len)
@@ -92,7 +119,6 @@ class Transformer_Executor(Base_Executor):
             log.info("###Load eval data ...")
             self.val_data = Scratch_LexDataset(data_path = self.config.val_path,
                                             tokenizer = self.tokenizer,
-                                            modeltype = self.config.modeltype,
                                             batch = 256,
                                             src_max_token_len = self.config.src_max_token_len,
                                             trg_max_token_len = self.config.trg_max_token_len)
@@ -106,7 +132,6 @@ class Transformer_Executor(Base_Executor):
             log.info("###Load predict data ...")
             self.predict_data = Scratch_LexDataset(data_path = self.config.predict_path,
                                             tokenizer = self.tokenizer,
-                                            modeltype = self.config.modeltype,
                                             batch = 256,
                                             src_max_token_len = self.config.src_max_token_len,
                                             trg_max_token_len = self.config.trg_max_token_len)

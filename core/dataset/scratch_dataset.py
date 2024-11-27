@@ -39,13 +39,13 @@ class Scratch_LexDataset(Dataset):
     def prepare_io(self, dataframe, batch):
         self.src = list(dataframe['src'])
         self.trg = list(dataframe['trg'])
-        src_ids, trg_ids, src_masks, trg_masks = self.encoding(dataframe, batch)
+        src_ids, trg_ids= self.encoding(dataframe, batch)
             
         for index in range(len(dataframe)):
             src_id = torch.tensor(src_ids[index], dtype=torch.int32)
             trg_id = torch.tensor(trg_ids[index], dtype=torch.int32)
-            src_attention_mask = torch.tensor(src_masks[index], dtype=torch.int32)
-            label_attention_mask = torch.tensor(trg_masks[index], dtype=torch.int32)
+            src_attention_mask = self._create_padding_mask(src_id, self.tokenizer.pad_id)
+            label_attention_mask = self._create_padding_mask(trg_id, self.tokenizer.pad_id)
 
 
             self.data.append({'input_ids': src_id.flatten(), 'labels': trg_id.flatten(),
@@ -58,8 +58,6 @@ class Scratch_LexDataset(Dataset):
     def encoding(self, dataframe, batch):
         src_ids = []
         trg_ids = []
-        src_masks = []
-        trg_masks = []
         
         for i in range(0, len(dataframe), batch):
 
@@ -72,17 +70,16 @@ class Scratch_LexDataset(Dataset):
             trg_encoding = self.tokenizer(trgs,
                                         max_length = self.trg_max_token_len,)
 
-            
-            src_ids += src_encoding["input_ids"]
-            src_masks += src_encoding["attention_mask"]
-
-            trg_ids += trg_encoding["input_ids"]
-            trg_masks += trg_encoding["attention_mask"]
+            src_ids += src_encoding
+            trg_ids += trg_encoding
 
             if i + 1 == 1 or (i - batch) % 1000 == 0 or i+batch == len(dataframe):
                 log.info(f"Encoding... {i+1}/{len(dataframe)}")
 
-        return src_ids, trg_ids, src_masks, trg_masks
+        return src_ids, trg_ids
+    
+    def _create_padding_mask(self, ids, pad_token_id):
+        return ids == pad_token_id
 
     def __getitem__(self, index: int):
         return self.data[index]
