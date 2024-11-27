@@ -30,7 +30,7 @@ class Base_Executor():
         self.evaltype = evaltype
         self.predicttype = predicttype
 
-        self.best_score = 0
+        self.best_score = -5
 
         if self.mode == "train":
             self._create_data_utils()
