@@ -144,7 +144,7 @@ class Base_Executor():
 
             self.pretrain_loss_fn = torch.nn.CrossEntropyLoss(ignore_index=self.tokenizer.pad_token_id)
             
-            self.pretrain_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer = self.optim, total_iters = self.config.pretrain_warmup_step)
+            self.pretrain_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer = self.pretrain_optim, total_iters = self.config.pretrain_warmup_step)
 
 
         self.optim = torch.optim.Adam(self.model.parameters(), lr=self.config.LR, betas=self.config.BETAS, eps=1e-9)
